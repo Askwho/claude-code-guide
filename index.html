@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Claude Code: A Practical Guide — Tom Askew</title>
-<meta name="description" content="A lean, authoritative reference for Claude Code — Anthropic's agentic coding tool. Configuration, memory, workflows, and setup best practices." />
+<meta name="description" content="A lean, authoritative reference for Claude Code. Configuration, memory, workflows, and setup best practices. Beginner-friendly." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,800;1,9..144,400&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -12,465 +12,233 @@
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
 <style>
-  :root {
-    --bg-deep: #0e0c0a;
-    --bg-surface: #151310;
-    --bg-sidebar: #121010;
-    --bg-elevated: #1c1916;
-    --bg-code: #0b0a08;
-    --border: rgba(180,140,80,0.1);
-    --border-strong: rgba(180,140,80,0.22);
-    --gold: #d4a855;
-    --gold-dim: #a68540;
-    --gold-bright: #f0cf7a;
-    --text-primary: #e8ddd0;
-    --text-body: #b0a490;
-    --text-muted: #7a7060;
-    --text-faint: #504838;
-    --accent-blue: #6898c0;
-    --accent-green: #6aad78;
-    --accent-amber: #c89840;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body, #root { height: 100%; width: 100%; overflow: hidden; background: var(--bg-deep); }
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(180,140,80,0.15); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(180,140,80,0.3); }
-
-  @keyframes reveal { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .grain {
-    position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 180px;
-  }
+  :root{--bg:#0e0c0a;--bg2:#151310;--bg3:#121010;--bg4:#1c1916;--bgC:#0b0a08;--b1:rgba(180,140,80,.1);--b2:rgba(180,140,80,.22);--g:#d4a855;--gd:#a68540;--gb:#f0cf7a;--t1:#e8ddd0;--t2:#b0a490;--t3:#7a7060;--t4:#504838;--ab:#6898c0;--ag:#6aad78;--aa:#c89840;--ar:#c86060}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body,#root{height:100%;width:100%;overflow:hidden;background:var(--bg)}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(180,140,80,.15);border-radius:3px}
+  @keyframes reveal{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  .grain{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:180px}
 </style>
 </head>
 <body>
 <div class="grain"></div>
 <div id="root"></div>
-
 <script type="text/babel" data-type="module">
-const { useState, useEffect, useRef, useCallback } = React;
-
-const SECTIONS = [
-  { id: "intro", num: "01", label: "What It Is" },
-  { id: "install", num: "02", label: "Installation" },
-  { id: "claude-md", num: "03", label: "CLAUDE.md" },
-  { id: "rules", num: "04", label: "Rules" },
-  { id: "skills", num: "05", label: "Skills" },
-  { id: "subagents", num: "06", label: "Subagents" },
-  { id: "settings", num: "07", label: "Settings & Hooks" },
-  { id: "memory", num: "08", label: "Memory" },
-  { id: "patterns", num: "09", label: "Patterns" },
-  { id: "setup", num: "10", label: "Best Practices" },
-  { id: "troubleshooting", num: "11", label: "Troubleshooting" },
-  { id: "reference", num: "12", label: "Reference" },
+const {useState,useEffect,useRef,useCallback}=React;
+const SEC=[
+  {id:"intro",n:"01",l:"What It Is"},
+  {id:"install",n:"02",l:"Installation"},
+  {id:"first",n:"03",l:"First Steps"},
+  {id:"claude-md",n:"04",l:"CLAUDE.md"},
+  {id:"rules",n:"05",l:"Rules"},
+  {id:"skills",n:"06",l:"Skills & Plugins"},
+  {id:"subagents",n:"07",l:"Subagents"},
+  {id:"settings",n:"08",l:"Permissions & Hooks"},
+  {id:"memory",n:"09",l:"Memory"},
+  {id:"context",n:"10",l:"Context Management"},
+  {id:"patterns",n:"11",l:"Patterns"},
+  {id:"setup",n:"12",l:"Best Practices"},
+  {id:"troubleshooting",n:"13",l:"Troubleshooting"},
+  {id:"reference",n:"14",l:"Reference"},
 ];
 
-/* ─── Primitives ─── */
+function C({children,block,lang}){
+  if(!block)return <code style={{background:"rgba(180,140,80,.08)",color:"var(--g)",padding:"1px 7px",borderRadius:3,fontFamily:"'IBM Plex Mono',monospace",fontSize:".84em",border:"1px solid rgba(180,140,80,.1)"}}>{children}</code>;
+  return <div style={{position:"relative",margin:"24px 0"}}>
+    {lang&&<div style={{position:"absolute",top:0,right:0,background:"rgba(180,140,80,.1)",color:"var(--gd)",fontSize:10,fontFamily:"'IBM Plex Mono',monospace",padding:"4px 12px",borderBottomLeftRadius:8,borderTopRightRadius:8,letterSpacing:1.5,textTransform:"uppercase",fontWeight:500}}>{lang}</div>}
+    <pre style={{background:"var(--bgC)",border:"1px solid var(--b1)",borderRadius:10,padding:"22px 26px",overflowX:"auto",fontFamily:"'IBM Plex Mono',monospace",fontSize:13,lineHeight:1.75,color:"#c0b098",margin:0}}><code>{children}</code></pre>
+  </div>;
+}
 
-function Code({ children, block, lang }) {
-  if (!block) return (
-    <code style={{
-      background: "rgba(180,140,80,0.08)", color: "var(--gold)",
-      padding: "1px 7px", borderRadius: 3,
-      fontFamily: "'IBM Plex Mono', monospace", fontSize: "0.84em",
-      border: "1px solid rgba(180,140,80,0.1)",
-    }}>{children}</code>
-  );
-  return (
-    <div style={{ position: "relative", margin: "24px 0" }}>
-      {lang && <div style={{
-        position: "absolute", top: 0, right: 0,
-        background: "rgba(180,140,80,0.1)", color: "var(--gold-dim)",
-        fontSize: 10, fontFamily: "'IBM Plex Mono', monospace",
-        padding: "4px 12px", borderBottomLeftRadius: 8, borderTopRightRadius: 8,
-        letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 500,
-      }}>{lang}</div>}
-      <pre style={{
-        background: "var(--bg-code)", border: "1px solid var(--border)",
-        borderRadius: 10, padding: "22px 26px", overflowX: "auto",
-        fontFamily: "'IBM Plex Mono', monospace",
-        fontSize: 13, lineHeight: 1.75, color: "#c0b098", margin: 0,
-      }}><code>{children}</code></pre>
+function T({headers:h,rows:r}){
+  return <div style={{overflowX:"auto",margin:"24px 0",borderRadius:10,border:"1px solid var(--b1)"}}>
+    <table style={{width:"100%",borderCollapse:"collapse",fontSize:14,lineHeight:1.6}}>
+      <thead><tr style={{background:"rgba(180,140,80,.04)"}}>
+        {h.map((x,i)=><th key={i} style={{textAlign:"left",padding:"12px 18px",borderBottom:"1px solid var(--b2)",color:"var(--g)",fontWeight:600,fontSize:11,letterSpacing:1.2,textTransform:"uppercase",fontFamily:"'IBM Plex Mono',monospace",whiteSpace:"nowrap"}}>{x}</th>)}
+      </tr></thead>
+      <tbody>{r.map((row,ri)=><tr key={ri} style={{borderBottom:ri<r.length-1?"1px solid var(--b1)":"none"}}>
+        {row.map((cell,ci)=><td key={ci} style={{padding:"11px 18px",color:ci===0?"var(--t1)":"var(--t3)",fontFamily:ci===0?"'IBM Plex Mono',monospace":"inherit",fontSize:ci===0?13:14,fontWeight:ci===0?500:400}}>{cell}</td>)}
+      </tr>)}</tbody>
+    </table>
+  </div>;
+}
+
+function Box({type="info",children}){
+  const s={info:{a:"var(--ab)",bg:"rgba(104,152,192,.06)",i:"i"},warn:{a:"var(--aa)",bg:"rgba(200,152,64,.06)",i:"!"},tip:{a:"var(--ag)",bg:"rgba(106,173,120,.06)",i:"✦"},danger:{a:"var(--ar)",bg:"rgba(200,96,96,.06)",i:"⚠"}}[type]||{};
+  return <div style={{background:s.bg,borderLeft:`3px solid ${s.a}`,borderRadius:"0 10px 10px 0",padding:"18px 22px",margin:"24px 0",display:"flex",gap:14,alignItems:"flex-start"}}>
+    <span style={{color:s.a,fontSize:11,fontWeight:700,flexShrink:0,width:22,height:22,borderRadius:"50%",border:`1.5px solid ${s.a}`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'IBM Plex Mono',monospace",marginTop:1}}>{s.i}</span>
+    <div style={{color:"var(--t2)",fontSize:14,lineHeight:1.7}}>{children}</div>
+  </div>;
+}
+
+function R({children,delay=0}){
+  const ref=useRef(null);const[v,setV]=useState(false);
+  useEffect(()=>{const el=ref.current;if(!el)return;const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);o.disconnect()}},{threshold:.08});o.observe(el);return()=>o.disconnect()},[]);
+  return <div ref={ref} style={{opacity:v?1:0,transform:v?"translateY(0)":"translateY(20px)",transition:`opacity .5s ease ${delay}s, transform .5s ease ${delay}s`}}>{children}</div>;
+}
+
+function Sec({id,num,title,children}){
+  return <section id={id} style={{marginBottom:72,scrollMarginTop:40}}>
+    <R><div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:28}}>
+      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,color:"var(--gd)",fontWeight:500,letterSpacing:1,opacity:.6,flexShrink:0}}>{num}</span>
+      <h2 style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:30,fontWeight:700,color:"var(--t1)",letterSpacing:-.8,lineHeight:1.2,flex:1}}>{title}</h2>
+    </div><div style={{width:"100%",height:1,background:"var(--b2)",marginBottom:32}}/></R>
+    {children}
+  </section>;
+}
+
+function Sub({title,children}){return <R delay={.05}><div style={{marginBottom:40}}><h3 style={{fontFamily:"'Karla',sans-serif",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:14,letterSpacing:-.2}}>{title}</h3>{children}</div></R>;}
+function P({children}){return <p style={{color:"var(--t2)",lineHeight:1.8,fontSize:15,marginBottom:16,fontFamily:"'Karla',sans-serif"}}>{children}</p>;}
+function B({children}){return <strong style={{color:"var(--t1)",fontWeight:600}}>{children}</strong>;}
+
+function App(){
+  const[active,setActive]=useState("intro");
+  const[menuOpen,setMenuOpen]=useState(false);
+  const[progress,setProgress]=useState(0);
+  const mainRef=useRef(null);
+  const onScroll=useCallback(()=>{
+    const el=mainRef.current;if(!el)return;
+    const top=el.scrollTop,h=el.scrollHeight-el.clientHeight;
+    setProgress(h>0?(top/h)*100:0);
+    let cur="intro";for(const s of SEC){const sec=document.getElementById(s.id);if(sec&&sec.offsetTop-100<=top)cur=s.id;}setActive(cur);
+  },[]);
+  useEffect(()=>{const el=mainRef.current;if(el)el.addEventListener("scroll",onScroll,{passive:true});return()=>el&&el.removeEventListener("scroll",onScroll)},[onScroll]);
+  const go=id=>{document.getElementById(id)?.scrollIntoView({behavior:"smooth"});setMenuOpen(false)};
+
+  return <div style={{height:"100vh",width:"100%",display:"flex",justifyContent:"center",background:"var(--bg)"}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,height:2,zIndex:100,background:"var(--bg)"}}>
+      <div style={{height:"100%",width:`${progress}%`,background:"linear-gradient(90deg,var(--gd),var(--gb))",transition:"width .1s linear"}}/>
     </div>
-  );
-}
+    <div style={{display:"flex",width:"100%",maxWidth:1200,height:"100%",overflow:"hidden"}}>
+      <button onClick={()=>setMenuOpen(!menuOpen)} id="mob-btn" style={{position:"fixed",top:14,left:14,zIndex:1001,background:"var(--bg4)",border:"1px solid var(--b2)",color:"var(--g)",width:42,height:42,borderRadius:10,cursor:"pointer",alignItems:"center",justifyContent:"center",fontSize:18,display:"none",boxShadow:"0 4px 20px rgba(0,0,0,.4)"}}>{menuOpen?"✕":"☰"}</button>
+      <style>{`@media(max-width:960px){#mob-btn{display:flex!important}#sidebar{position:fixed!important;z-index:1000!important;height:100vh!important;transform:${menuOpen?"translateX(0)":"translateX(-100%)"}!important;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;box-shadow:${menuOpen?"8px 0 40px rgba(0,0,0,.6)":"none"}!important}}@media(max-width:600px){#main-area{padding:36px 24px 120px!important}.hero-title{font-size:34px!important}}`}</style>
 
-function Table({ headers, rows }) {
-  return (
-    <div style={{ overflowX: "auto", margin: "24px 0", borderRadius: 10, border: "1px solid var(--border)" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, lineHeight: 1.6 }}>
-        <thead>
-          <tr style={{ background: "rgba(180,140,80,0.04)" }}>
-            {headers.map((h, i) => (
-              <th key={i} style={{
-                textAlign: "left", padding: "12px 18px",
-                borderBottom: "1px solid var(--border-strong)",
-                color: "var(--gold)", fontWeight: 600, fontSize: 11,
-                letterSpacing: 1.2, textTransform: "uppercase",
-                fontFamily: "'IBM Plex Mono', monospace", whiteSpace: "nowrap",
-              }}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, ri) => (
-            <tr key={ri} style={{ borderBottom: ri < rows.length - 1 ? "1px solid var(--border)" : "none" }}>
-              {row.map((cell, ci) => (
-                <td key={ci} style={{
-                  padding: "11px 18px",
-                  color: ci === 0 ? "var(--text-primary)" : "var(--text-muted)",
-                  fontFamily: ci === 0 ? "'IBM Plex Mono', monospace" : "inherit",
-                  fontSize: ci === 0 ? 13 : 14, fontWeight: ci === 0 ? 500 : 400,
-                }}>{cell}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Callout({ type = "info", children }) {
-  const s = {
-    info: { accent: "var(--accent-blue)", bg: "rgba(104,152,192,0.06)", icon: "i" },
-    warn: { accent: "var(--accent-amber)", bg: "rgba(200,152,64,0.06)", icon: "!" },
-    tip:  { accent: "var(--accent-green)", bg: "rgba(106,173,120,0.06)", icon: "✦" },
-  }[type] || {};
-  return (
-    <div style={{
-      background: s.bg, borderLeft: `3px solid ${s.accent}`,
-      borderRadius: "0 10px 10px 0", padding: "18px 22px",
-      margin: "24px 0", display: "flex", gap: 14, alignItems: "flex-start",
-    }}>
-      <span style={{
-        color: s.accent, fontSize: 11, fontWeight: 700, flexShrink: 0,
-        width: 22, height: 22, borderRadius: "50%",
-        border: `1.5px solid ${s.accent}`, display: "flex",
-        alignItems: "center", justifyContent: "center",
-        fontFamily: "'IBM Plex Mono', monospace", marginTop: 1,
-      }}>{s.icon}</span>
-      <div style={{ color: "var(--text-body)", fontSize: 14, lineHeight: 1.7 }}>{children}</div>
-    </div>
-  );
-}
-
-function Reveal({ children, delay = 0 }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.08 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return (
-    <div ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(20px)",
-      transition: `opacity 0.5s ease ${delay}s, transform 0.5s ease ${delay}s`,
-    }}>{children}</div>
-  );
-}
-
-function Section({ id, num, title, children }) {
-  return (
-    <section id={id} style={{ marginBottom: 72, scrollMarginTop: 40 }}>
-      <Reveal>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 28 }}>
-          <span style={{
-            fontFamily: "'IBM Plex Mono', monospace", fontSize: 13,
-            color: "var(--gold-dim)", fontWeight: 500, letterSpacing: 1,
-            opacity: 0.6, flexShrink: 0,
-          }}>{num}</span>
-          <h2 style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 30,
-            fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.8,
-            lineHeight: 1.2, flex: 1,
-          }}>{title}</h2>
+      {/* Sidebar */}
+      <nav id="sidebar" style={{width:250,minWidth:250,height:"100%",background:"var(--bg3)",borderRight:"1px solid var(--b1)",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"32px 24px 24px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:11,marginBottom:8}}>
+            <div style={{width:30,height:30,borderRadius:8,background:"linear-gradient(135deg,var(--g) 0%,#8a6420 100%)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"var(--bg)",fontFamily:"'IBM Plex Mono',monospace",letterSpacing:-1}}>{">_"}</div>
+            <div><div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:16,color:"var(--t1)",letterSpacing:-.4,lineHeight:1.2}}>Claude Code</div>
+              <div style={{fontSize:10,color:"var(--t4)",fontFamily:"'IBM Plex Mono',monospace",letterSpacing:1.5,textTransform:"uppercase",marginTop:2}}>Practical Guide</div>
+            </div>
+          </div>
         </div>
-        <div style={{ width: "100%", height: 1, background: "var(--border-strong)", marginBottom: 32 }} />
-      </Reveal>
-      {children}
-    </section>
-  );
-}
+        <div style={{width:"100%",height:1,background:"var(--b1)"}}/>
+        <div style={{flex:1,overflowY:"auto",padding:"20px 14px"}}>
+          {SEC.map(s=>{const a=active===s.id;return <button key={s.id} onClick={()=>go(s.id)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",padding:"8px 12px",marginBottom:1,borderRadius:8,border:"none",cursor:"pointer",background:a?"rgba(180,140,80,.08)":"transparent",transition:"all .2s ease",fontFamily:"'Karla',sans-serif"}}>
+            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:a?"var(--g)":"var(--t4)",fontWeight:500,width:18,flexShrink:0}}>{s.n}</span>
+            <span style={{fontSize:13,fontWeight:a?600:400,color:a?"var(--g)":"var(--t3)"}}>{s.l}</span>
+          </button>})}
+        </div>
+        <div style={{padding:"18px 24px",borderTop:"1px solid var(--b1)"}}>
+          <div style={{fontSize:11,color:"var(--t4)",fontFamily:"'IBM Plex Mono',monospace",lineHeight:1.6}}>Tom Askew<br/>March 2026</div>
+        </div>
+      </nav>
 
-function Sub({ title, children }) {
-  return (
-    <Reveal delay={0.05}>
-      <div style={{ marginBottom: 40 }}>
-        <h3 style={{
-          fontFamily: "'Karla', sans-serif", fontSize: 18,
-          fontWeight: 700, color: "var(--gold)", marginBottom: 14,
-          letterSpacing: -0.2,
-        }}>{title}</h3>
-        {children}
-      </div>
-    </Reveal>
-  );
-}
+      {/* Main */}
+      <main ref={mainRef} id="main-area" style={{flex:1,overflowY:"auto",padding:"48px 64px 140px"}}>
+        <div style={{maxWidth:680,margin:"0 auto"}}>
 
-function P({ children }) {
-  return <p style={{ color: "var(--text-body)", lineHeight: 1.8, fontSize: 15, marginBottom: 16, fontFamily: "'Karla', sans-serif" }}>{children}</p>;
-}
+          {/* Hero */}
+          <R><div style={{marginBottom:80}}>
+            <div style={{display:"inline-block",padding:"5px 14px",borderRadius:20,background:"rgba(180,140,80,.08)",border:"1px solid var(--b1)",fontSize:11,fontFamily:"'IBM Plex Mono',monospace",color:"var(--gd)",letterSpacing:1.5,textTransform:"uppercase",marginBottom:28,fontWeight:500}}>Condensed Reference</div>
+            <h1 className="hero-title" style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:48,fontWeight:800,color:"var(--t1)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:8}}>Claude Code</h1>
+            <h1 className="hero-title" style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:48,fontWeight:300,color:"var(--g)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:28,fontStyle:"italic"}}>Practical Guide</h1>
+            <P>A lean, beginner-friendly reference for Claude Code — Anthropic's agentic coding tool. Covers installation, configuration, memory, workflows, permissions, and setup best practices. Sourced from Anthropic's official documentation.</P>
+          </div></R>
 
-function B({ children }) {
-  return <strong style={{ color: "var(--text-primary)", fontWeight: 600 }}>{children}</strong>;
-}
+          {/* 01 Intro */}
+          <Sec id="intro" num="01" title="What Claude Code Is">
+            <R><P>Claude Code is an AI coding assistant from Anthropic that runs in your terminal (the command-line interface on your computer). It can read and edit your files, run scripts, use git, and remember context across sessions. It also works inside VS Code, Cursor, and the Claude Desktop app.</P></R>
+            <R delay={.1}><T headers={["Capability","What It Does"]} rows={[
+              ["File access","Read and edit any file in your project"],
+              ["Shell execution","Run scripts, compilers, build tools directly"],
+              ["Git integration","Commits, branches, PRs from the conversation"],
+              ["Persistent memory","CLAUDE.md + auto memory survive across sessions"],
+              ["Subagents","Spawn specialised sub-agents for parallel tasks"],
+              ["Skills & Plugins","Reusable workflows via /skill-name, extensible via plugin marketplace"],
+              ["Hooks","Deterministic shell commands at lifecycle events"],
+            ]}/></R>
+            <R delay={.15}><Box type="info">Requires a <B>Pro, Max, Teams, Enterprise, or Console</B> account. The free Claude.ai plan does not include access. Third-party providers (Bedrock, Vertex AI, Foundry) also supported.</Box></R>
+          </Sec>
 
-/* ─── App ─── */
+          {/* 02 Install */}
+          <Sec id="install" num="02" title="Installation">
+            <R><P>The <B>native binary installer</B> is Anthropic's recommended method. It requires no dependencies (no Node.js), auto-updates in the background, and is the most stable option.</P></R>
+            <Sub title="macOS / Linux / WSL">
+              <P>Open your terminal application (Terminal on Mac, or any terminal on Linux) and paste this command:</P>
+              <C block lang="bash">{`curl -fsSL https://claude.ai/install.sh | bash`}</C>
+              <P>If you use <B>Homebrew</B> (a popular package manager for Mac and Linux), you can install with:</P>
+              <C block lang="bash">{`brew install --cask claude-code`}</C>
+              <Box type="info">Homebrew installations do not auto-update. Run <C>brew upgrade claude-code</C> periodically.</Box>
+            </Sub>
+            <Sub title="Windows">
+              <P>Windows requires <B>Git for Windows</B> or <B>WSL</B> (Windows Subsystem for Linux). Open PowerShell and run:</P>
+              <C block lang="powershell">{`irm https://claude.ai/install.ps1 | iex`}</C>
+              <P>Alternatively, if you use <B>WinGet</B> (built into Windows 10/11):</P>
+              <C block lang="powershell">{`winget install Anthropic.ClaudeCode`}</C>
+              <Box type="info">WinGet installations do not auto-update. Run <C>winget upgrade Anthropic.ClaudeCode</C> periodically.</Box>
+            </Sub>
+            <Sub title="Verify & Start">
+              <P>After installation, open a terminal, navigate to the folder containing your project, and type:</P>
+              <C block lang="bash">{`cd ~/my-project
+claude`}</C>
+              <P>You'll be prompted to log in via your browser on first use. After that, you're ready to go. Run <C>claude doctor</C> at any time to check your installation health.</P>
+            </Sub>
+            <Box type="warn"><B>npm is deprecated.</B> If you previously installed via <C>npm install -g @anthropic-ai/claude-code</C>, Anthropic recommends migrating to the native binary. Run <C>claude install</C> from an existing session, then <C>npm uninstall -g @anthropic-ai/claude-code</C>.</Box>
+          </Sec>
 
-function App() {
-  const [active, setActive] = useState("intro");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const mainRef = useRef(null);
+          {/* 03 First Steps */}
+          <Sec id="first" num="03" title="First Steps — What to Know Immediately">
+            <R><P>Before diving into configuration, here are the day-to-day basics that every user should know from the start.</P></R>
 
-  const onScroll = useCallback(() => {
-    const el = mainRef.current;
-    if (!el) return;
-    const top = el.scrollTop;
-    const height = el.scrollHeight - el.clientHeight;
-    setProgress(height > 0 ? (top / height) * 100 : 0);
-    let cur = "intro";
-    for (const s of SECTIONS) {
-      const sec = document.getElementById(s.id);
-      if (sec && sec.offsetTop - 100 <= top) cur = s.id;
-    }
-    setActive(cur);
-  }, []);
+            <Sub title="@ File References">
+              <P>Type <C>@</C> followed by a filename to include that file's content directly in your prompt. This prevents Claude from doing an unnecessary full-project scan.</P>
+              <C block lang="text">{`> @src/auth/login.ts explain this file
+> @package.json what dependencies am I using?
+> @src/components/ list what's in this directory`}</C>
+              <P>In VS Code, press <B>Option+K</B> (Mac) or <B>Alt+K</B> (Windows/Linux) to insert an <C>@</C>-mention with file path and line numbers from your current selection.</P>
+            </Sub>
 
-  useEffect(() => {
-    const el = mainRef.current;
-    if (el) el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el && el.removeEventListener("scroll", onScroll);
-  }, [onScroll]);
+            <Sub title="/clear — Reset Your Conversation">
+              <P>When switching to an unrelated task, use <C>/clear</C> to start a fresh session. Stale context wastes tokens on every subsequent message. Your previous session is preserved and can be resumed later with <C>/resume</C>.</P>
+              <Box type="tip">Use <C>/rename</C> before clearing so you can easily find the session later.</Box>
+            </Sub>
 
-  const go = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setMenuOpen(false);
-  };
+            <Sub title="/compact — Summarise Context">
+              <P>When your conversation gets long but you want to continue (not start fresh), use <C>/compact</C>. Claude summarises the conversation history, preserving key context while freeing up space. You can customise what gets preserved: <C>/compact Focus on the API design decisions</C>.</P>
+            </Sub>
 
-  return (
-    <div style={{ height: "100vh", width: "100%", display: "flex", justifyContent: "center", background: "var(--bg-deep)" }}>
+            <Sub title="/cost — Track Token Usage">
+              <P>Run <C>/cost</C> to see how many tokens you've used in the current session. Useful for API users tracking spend. Pro/Max subscribers have usage included in their subscription.</P>
+            </Sub>
+          </Sec>
 
-      {/* Progress bar */}
-      <div style={{
-        position: "fixed", top: 0, left: 0, right: 0, height: 2, zIndex: 100,
-        background: "var(--bg-deep)",
-      }}>
-        <div style={{
-          height: "100%", width: `${progress}%`,
-          background: `linear-gradient(90deg, var(--gold-dim), var(--gold-bright))`,
-          transition: "width 0.1s linear",
-        }} />
-      </div>
+          {/* 04 CLAUDE.md */}
+          <Sec id="claude-md" num="04" title="CLAUDE.md — The Project Constitution">
+            <R><P><C>CLAUDE.md</C> is a plain text file you place in your project root. Claude reads it at the start of every session. It tells Claude about your project's rules, structure, and conventions. Think of it as a brief for a new team member.</P></R>
+            <R><Box type="warn">Target <B>under 200 lines</B> per file. Longer files consume more context tokens and reduce how reliably Claude follows them. Instructions are context, not enforced configuration.</Box></R>
 
-      {/* Centered container */}
-      <div style={{
-        display: "flex", width: "100%", maxWidth: 1200,
-        height: "100%", overflow: "hidden",
-      }}>
-
-        {/* Mobile toggle */}
-        <button onClick={() => setMenuOpen(!menuOpen)} id="mob-btn" style={{
-          position: "fixed", top: 14, left: 14, zIndex: 1001,
-          background: "var(--bg-elevated)", border: "1px solid var(--border-strong)",
-          color: "var(--gold)", width: 42, height: 42, borderRadius: 10,
-          cursor: "pointer", alignItems: "center", justifyContent: "center",
-          fontSize: 18, display: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-        }}>{menuOpen ? "✕" : "☰"}</button>
-
-        <style>{`
-          @media(max-width:960px){
-            #mob-btn{display:flex!important}
-            #sidebar{position:fixed!important;z-index:1000!important;height:100vh!important;
-              transform:${menuOpen?"translateX(0)":"translateX(-100%)"}!important;
-              transition:transform .3s cubic-bezier(.4,0,.2,1)!important;
-              box-shadow:${menuOpen?"8px 0 40px rgba(0,0,0,.6)":"none"}!important}
-          }
-          @media(max-width:600px){
-            #main-area{padding:36px 24px 120px!important}
-            .hero-title{font-size:34px!important}
-          }
-        `}</style>
-
-        {/* Sidebar */}
-        <nav id="sidebar" style={{
-          width: 250, minWidth: 250, height: "100%",
-          background: "var(--bg-sidebar)",
-          borderRight: "1px solid var(--border)",
-          display: "flex", flexDirection: "column",
-          animation: "fadeIn 0.4s ease",
-        }}>
-          <div style={{ padding: "32px 24px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 8 }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: 8,
-                background: "linear-gradient(135deg, var(--gold) 0%, #8a6420 100%)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 700, color: "var(--bg-deep)",
-                fontFamily: "'IBM Plex Mono', monospace", letterSpacing: -1,
-              }}>{">_"}</div>
-              <div>
-                <div style={{
-                  fontFamily: "'Fraunces', serif", fontWeight: 700,
-                  fontSize: 16, color: "var(--text-primary)", letterSpacing: -0.4, lineHeight: 1.2,
-                }}>Claude Code</div>
-                <div style={{
-                  fontSize: 10, color: "var(--text-faint)",
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  letterSpacing: 1.5, textTransform: "uppercase", marginTop: 2,
-                }}>Practical Guide</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ width: "100%", height: 1, background: "var(--border)" }} />
-
-          <div style={{ flex: 1, overflowY: "auto", padding: "20px 14px" }}>
-            {SECTIONS.map((s, i) => {
-              const isActive = active === s.id;
-              return (
-                <button key={s.id} onClick={() => go(s.id)} style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  width: "100%", textAlign: "left",
-                  padding: "8px 12px", marginBottom: 1, borderRadius: 8,
-                  border: "none", cursor: "pointer",
-                  background: isActive ? "rgba(180,140,80,0.08)" : "transparent",
-                  transition: "all 0.2s ease",
-                  fontFamily: "'Karla', sans-serif",
-                }}>
-                  <span style={{
-                    fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                    color: isActive ? "var(--gold)" : "var(--text-faint)",
-                    fontWeight: 500, width: 18, flexShrink: 0,
-                    transition: "color 0.2s ease",
-                  }}>{s.num}</span>
-                  <span style={{
-                    fontSize: 13, fontWeight: isActive ? 600 : 400,
-                    color: isActive ? "var(--gold)" : "var(--text-muted)",
-                    transition: "color 0.2s ease",
-                  }}>{s.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{
-            padding: "18px 24px", borderTop: "1px solid var(--border)",
-          }}>
-            <div style={{ fontSize: 11, color: "var(--text-faint)", fontFamily: "'IBM Plex Mono', monospace", lineHeight: 1.6 }}>
-              Tom Askew<br />March 2026
-            </div>
-          </div>
-        </nav>
-
-        {/* Main */}
-        <main ref={mainRef} id="main-area" style={{
-          flex: 1, overflowY: "auto", padding: "48px 64px 140px",
-        }}>
-          <div style={{ maxWidth: 680, margin: "0 auto" }}>
-
-            {/* Hero */}
-            <Reveal>
-              <div style={{ marginBottom: 80 }}>
-                <div style={{
-                  display: "inline-block", padding: "5px 14px", borderRadius: 20,
-                  background: "rgba(180,140,80,0.08)", border: "1px solid var(--border)",
-                  fontSize: 11, fontFamily: "'IBM Plex Mono', monospace",
-                  color: "var(--gold-dim)", letterSpacing: 1.5, textTransform: "uppercase",
-                  marginBottom: 28, fontWeight: 500,
-                }}>Condensed Reference</div>
-                <h1 className="hero-title" style={{
-                  fontFamily: "'Fraunces', Georgia, serif",
-                  fontSize: 48, fontWeight: 800, color: "var(--text-primary)",
-                  lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 8,
-                }}>Claude Code</h1>
-                <h1 className="hero-title" style={{
-                  fontFamily: "'Fraunces', Georgia, serif",
-                  fontSize: 48, fontWeight: 300, color: "var(--gold)",
-                  lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 28,
-                  fontStyle: "italic",
-                }}>Practical Guide</h1>
-                <P>A lean, authoritative reference for Claude Code — Anthropic's agentic coding tool. Covers configuration architecture, memory systems, workflow patterns, and setup best practices. Sourced from Anthropic's official documentation.</P>
-                <div style={{
-                  marginTop: 32, display: "flex", gap: 24, flexWrap: "wrap",
-                }}>
-                  {["5 Config Layers", "Auto Memory", "Subagents", "Hooks"].map((t, i) => (
-                    <div key={i} style={{
-                      fontSize: 12, color: "var(--text-muted)",
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      display: "flex", alignItems: "center", gap: 6,
-                    }}>
-                      <span style={{ color: "var(--gold-dim)", fontSize: 8 }}>◆</span> {t}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Intro */}
-            <Section id="intro" num="01" title="What Claude Code Is">
-              <Reveal><P>Claude Code is an agentic coding tool from Anthropic that runs in your terminal with full access to your file system, shell, and git. It also runs as a VS Code extension or through the Claude Desktop app — same capabilities, same configuration, different interface.</P></Reveal>
-              <Reveal delay={0.1}><Table headers={["Capability", "What It Does"]} rows={[
-                ["File access", "Read and edit any file in your project"],
-                ["Shell execution", "Run scripts, compilers, build tools directly"],
-                ["Git integration", "Commits, branches, PRs from the conversation"],
-                ["Persistent memory", "CLAUDE.md + auto memory survive across sessions"],
-                ["Subagents", "Spawn specialised sub-agents for parallel or isolated tasks"],
-                ["Skills", "Reusable multi-step workflows via /skill-name"],
-                ["Hooks", "Deterministic shell commands at lifecycle events"],
-              ]} /></Reveal>
-              <Reveal delay={0.15}><Callout type="info">Requires a <B>Pro, Max, Teams, Enterprise, or Console</B> account. Third-party providers (Bedrock, Vertex AI, Foundry) also supported.</Callout></Reveal>
-            </Section>
-
-            {/* Install */}
-            <Section id="install" num="02" title="Installation">
-              <Reveal><Code block lang="bash">{`# macOS / Linux / WSL (native binary — recommended)
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Or via npm (global)
-npm install -g @anthropic-ai/claude-code`}</Code></Reveal>
-              <Reveal delay={0.05}><P>Windows requires Git for Windows or WSL. After installation, navigate to your project directory and run <Code>claude</Code> to start. Native installations auto-update. Use <Code>/config</Code> to choose <Code>latest</Code> or <Code>stable</Code> release channel.</P></Reveal>
-            </Section>
-
-            {/* CLAUDE.md */}
-            <Section id="claude-md" num="03" title="CLAUDE.md — The Project Constitution">
-              <Reveal><P><Code>CLAUDE.md</Code> sits in the project root (or at <Code>.claude/CLAUDE.md</Code>). Claude reads it at the start of every session. It is the single most important configuration file.</P></Reveal>
-              <Reveal delay={0.05}><Callout type="warn">Target <B>under 200 lines</B> per file. Longer files consume more context tokens and reduce adherence. Instructions are context, not enforced configuration.</Callout></Reveal>
-
-              <Sub title="Survives Compaction">
-                <P>After <Code>/compact</Code>, Claude re-reads CLAUDE.md from disk and re-injects it fresh. If an instruction disappeared after compaction, it was given only in conversation — add it to CLAUDE.md to persist.</P>
-              </Sub>
-
-              <Sub title="Location Hierarchy">
-                <Table headers={["Location", "Scope"]} rows={[
-                  ["~/.claude/CLAUDE.md", "User-level — all projects"],
-                  ["./CLAUDE.md", "Project-level — this repo"],
-                  ["./CLAUDE.local.md", "Local overrides — gitignored"],
-                  ["Subdirectory CLAUDE.md", "On demand when reading files there"],
-                ]} />
-              </Sub>
-
-              <Sub title="Importing Files">
-                <P>Use <Code>@path</Code> syntax to reference content without bloating CLAUDE.md:</P>
-                <Code block lang="markdown">{`# CLAUDE.md
+            <Sub title="Survives Compaction">
+              <P>After <C>/compact</C>, Claude re-reads CLAUDE.md from disk and re-injects it fresh. If an instruction disappeared after compaction, it was given only in conversation — add it to CLAUDE.md to make it persist.</P>
+            </Sub>
+            <Sub title="Location Hierarchy">
+              <T headers={["Location","Scope"]} rows={[
+                ["~/.claude/CLAUDE.md","User-level — all projects"],
+                ["./CLAUDE.md or ./.claude/CLAUDE.md","Project-level — this repo"],
+                ["./CLAUDE.local.md","Local overrides — gitignored"],
+                ["Subdirectory CLAUDE.md","On demand when reading files there"],
+              ]}/>
+            </Sub>
+            <Sub title="Importing Files">
+              <P>Use <C>@path</C> syntax in CLAUDE.md to reference external content without bloating the file:</P>
+              <C block lang="markdown">{`# CLAUDE.md
 See @docs/api-conventions.md for API rules.
-See @docs/testing-standards.md for test reqs.`}</Code>
-              </Sub>
-
-              <Sub title="Writing Effective Instructions">
-                <P><B>Specific and verifiable</B> — "Use 2-space indentation" not "Format code properly." <B>Markdown structure</B> — headers and bullets aid scanning. <B>Split when growing</B> — move detail into <Code>.claude/rules/</Code> or <Code>@path</Code> imports past 200 lines.</P>
-                <Code block lang="markdown">{`# CLAUDE.MD — My Project
+See @docs/testing-standards.md for test reqs.`}</C>
+            </Sub>
+            <Sub title="Writing Effective Instructions">
+              <P><B>Specific and verifiable</B> — "Use 2-space indentation" not "Format code properly." <B>Markdown structure</B> — headers and bullets aid scanning. <B>Split when growing</B> — move detail into <C>.claude/rules/</C> or <C>@path</C> imports past 200 lines.</P>
+              <C block lang="markdown">{`# CLAUDE.MD — My Project
 
 **Project:** [Name]
 
@@ -483,19 +251,19 @@ See @docs/testing-standards.md for test reqs.`}</Code>
 | Command       | What It Does   |
 |---------------|----------------|
 | npm run build | Build project  |
-| npm test      | Run test suite |`}</Code>
-              </Sub>
-            </Section>
+| npm test      | Run test suite |`}</C>
+            </Sub>
+          </Sec>
 
-            {/* Rules */}
-            <Section id="rules" num="04" title="Rules — Auto-Loading Domain Knowledge">
-              <Reveal><P>Rules are markdown files in <Code>.claude/rules/</Code>. The key mechanism is <B>path-scoping</B>: rules with a <Code>paths:</Code> YAML frontmatter only load when Claude touches matching files. Always-on rules (no <Code>paths:</Code>) load every session — keep these minimal.</P></Reveal>
-              <Reveal delay={0.05}><Code block lang="text">{`.claude/rules/
+          {/* 05 Rules */}
+          <Sec id="rules" num="05" title="Rules — Auto-Loading Domain Knowledge">
+            <R><P>Rules are markdown files in <C>.claude/rules/</C>. The key mechanism is <B>path-scoping</B>: rules with a <C>paths:</C> YAML frontmatter only load when Claude touches matching files. Always-on rules (no <C>paths:</C>) load every session — keep these minimal.</P></R>
+            <R delay={.05}><C block lang="text">{`.claude/rules/
 ├── plan-first.md          # Always-on
 ├── python-standards.md    # paths: ["**/*.py"]
 ├── api-design.md          # paths: ["src/api/**/*.ts"]
-└── testing.md             # paths: ["tests/**"]`}</Code></Reveal>
-              <Reveal delay={0.1}><Code block lang="markdown">{`---
+└── testing.md             # paths: ["tests/**"]`}</C></R>
+            <R delay={.1}><C block lang="markdown">{`---
 paths:
   - "src/api/**/*.ts"
 ---
@@ -504,14 +272,15 @@ paths:
 
 - All endpoints must include input validation
 - Use the standard error response format
-- Include OpenAPI documentation comments`}</Code></Reveal>
-              <Reveal delay={0.15}><Callout type="tip">Patterns support globs and brace expansion (<Code>{"**/*.{ts,tsx}"}</Code>). The directory supports symlinks for sharing across projects. Each file should cover one topic.</Callout></Reveal>
-            </Section>
+- Include OpenAPI documentation comments`}</C></R>
+            <R><Box type="tip">Patterns support globs and brace expansion (<C>{"**/*.{ts,tsx}"}</C>). Supports symlinks for sharing across projects. One topic per file, descriptive filenames.</Box></R>
+          </Sec>
 
-            {/* Skills */}
-            <Section id="skills" num="05" title="Skills — Reusable Slash Commands">
-              <Reveal><P>Multi-step workflows invoked with <Code>/command-name</Code>. Live at <Code>.claude/skills/[name]/SKILL.md</Code> (project) or <Code>~/.claude/skills/[name]/SKILL.md</Code> (user).</P></Reveal>
-              <Reveal delay={0.05}><Code block lang="markdown">{`---
+          {/* 06 Skills & Plugins */}
+          <Sec id="skills" num="06" title="Skills & Plugins">
+            <Sub title="Skills — Reusable Slash Commands">
+              <P>Skills are multi-step workflows invoked with <C>/command-name</C>. Live at <C>.claude/skills/[name]/SKILL.md</C> (project) or <C>~/.claude/skills/[name]/SKILL.md</C> (user). Keep SKILL.md <B>under 500 lines</B>. Skills hot-reload without restart.</P>
+              <C block lang="markdown">{`---
 name: deploy
 description: Build, test, and deploy to staging.
   Use when user says "deploy" or "ship it".
@@ -520,38 +289,60 @@ description: Build, test, and deploy to staging.
 # Steps:
 1. Run the full test suite
 2. Build the production bundle
-3. Deploy to staging environment
-4. Verify deployment health check`}</Code></Reveal>
-              <Reveal delay={0.1}><Callout type="info">Keep SKILL.md <B>under 500 lines</B>. Skills hot-reload without restart.</Callout></Reveal>
+3. Deploy to staging
+4. Verify health check`}</C>
+              <T headers={["Frontmatter","Effect"]} rows={[
+                ["disable-model-invocation: true","Only user can invoke — /commit, /deploy"],
+                ["user-invocable: false","Only Claude can invoke — background knowledge"],
+                ["context: fork","Runs in a separate subagent context window"],
+              ]}/>
+            </Sub>
 
-              <Sub title="Invocation Control">
-                <Table headers={["Frontmatter", "Effect"]} rows={[
-                  ["disable-model-invocation: true", "Only user can invoke — /commit, /deploy"],
-                  ["user-invocable: false", "Only Claude can invoke — background knowledge"],
-                  ["context: fork", "Runs in a separate subagent context window"],
-                ]} />
-              </Sub>
-              <Sub title="Effective Descriptions">
-                <P>Good: <Code>description: Enforces PEP 8. Use when user asks to "check style" or "lint code".</Code></P>
-                <P>Bad: <Code>description: Helps with code quality</Code></P>
-              </Sub>
-            </Section>
+            <Sub title="Built-in Skills">
+              <P>Claude Code ships with several bundled skills you can use immediately. Type <C>/</C> to see all available commands:</P>
+              <T headers={["Skill","What It Does"]} rows={[
+                ["/simplify","Simplify complex code"],
+                ["/batch","Run operations across multiple files"],
+                ["/debug","Systematic debugging workflow"],
+                ["/security-review","Security audit of recent changes"],
+              ]}/>
+            </Sub>
 
-            {/* Subagents */}
-            <Section id="subagents" num="06" title="Subagents — Specialised Delegates">
-              <Reveal><P>Subagents run in their own context window with a custom system prompt, tool access, and permissions. Claude delegates automatically when a task matches.</P></Reveal>
+            <Sub title="Plugins — Community Extensions">
+              <P>Plugins extend Claude Code with skills, agents, hooks, and MCP servers. They are distributed through <B>marketplaces</B> — GitHub repositories that host collections of plugins.</P>
+              <P>Use the <C>/plugin</C> command to discover, install, and manage plugins interactively. Plugins can be scoped to a single project or installed for all your projects.</P>
+              <C block lang="json">{`// .claude/settings.json
+{
+  "enabledPlugins": {
+    "formatter@team-tools": true,
+    "deployer@team-tools": true
+  },
+  "extraKnownMarketplaces": {
+    "team-tools": {
+      "source": {
+        "source": "github",
+        "repo": "your-org/claude-plugins"
+      }
+    }
+  }
+}`}</C>
+              <Box type="tip">Anthropic has launched a directory of partner-built skills. When a repository includes <C>extraKnownMarketplaces</C> in its settings, team members are prompted to install the marketplace when they trust the folder.</Box>
+            </Sub>
+          </Sec>
 
-              <Sub title="Built-in Subagents">
-                <Table headers={["Subagent", "Purpose", "Tools"]} rows={[
-                  ["Explore", "Fast read-only codebase search", "Read-only"],
-                  ["Plan", "Research agent for plan mode", "Read-only"],
-                  ["General-purpose", "Complex multi-step tasks", "Full"],
-                ]} />
-              </Sub>
-
-              <Sub title="Custom Subagents">
-                <P>Markdown files in <Code>.claude/agents/</Code> (project) or <Code>~/.claude/agents/</Code> (user). Use <Code>/agents</Code> to manage.</P>
-                <Code block lang="markdown">{`---
+          {/* 07 Subagents */}
+          <Sec id="subagents" num="07" title="Subagents — Specialised Delegates">
+            <R><P>Subagents run in their own context window with a custom system prompt, tool access, and permissions. Claude delegates automatically when a task matches.</P></R>
+            <Sub title="Built-in Subagents">
+              <T headers={["Subagent","Purpose","Tools"]} rows={[
+                ["Explore","Fast read-only codebase search","Read-only"],
+                ["Plan","Research agent for plan mode","Read-only"],
+                ["General-purpose","Complex multi-step tasks","Full"],
+              ]}/>
+            </Sub>
+            <Sub title="Custom Subagents">
+              <P>Markdown files in <C>.claude/agents/</C> (project) or <C>~/.claude/agents/</C> (user). Use <C>/agents</C> to create and manage interactively.</P>
+              <C block lang="markdown">{`---
 name: code-reviewer
 description: Expert code review. Use when
   reviewing for quality and security.
@@ -563,23 +354,30 @@ You are a senior code reviewer. For each file:
 1. Check for bugs and security issues
 2. Evaluate performance
 3. Suggest improvements with line refs
-4. Rate quality (1-10)`}</Code>
-                <Table headers={["Property", "Effect"]} rows={[
-                  ["tools:", "Restrict tools. Omit to inherit all."],
-                  ["model: sonnet|opus|haiku|inherit", "Choose model per agent."],
-                  ["background: true", "Run as a background task."],
-                  ['isolation: "worktree"', "Run in an isolated git worktree."],
-                ]} />
-              </Sub>
-              <Reveal><Callout type="warn">Opus 4.6 tends to spawn subagents even when direct work suffices. Add CLAUDE.md guidance: "For simple tasks, single-file edits, or sequential operations, work directly."</Callout></Reveal>
-            </Section>
+4. Rate quality (1-10)`}</C>
+              <T headers={["Property","Effect"]} rows={[
+                ["tools:","Restrict tools. Omit to inherit all."],
+                ["model: sonnet|opus|haiku|inherit","Choose model per agent."],
+                ["background: true","Run as a background task."],
+                ['isolation: "worktree"',"Run in an isolated git worktree."],
+              ]}/>
+            </Sub>
+            <R><Box type="warn">Opus 4.6 tends to spawn subagents even when direct work suffices. Add CLAUDE.md guidance: "For simple tasks, single-file edits, or sequential operations, work directly."</Box></R>
+          </Sec>
 
-            {/* Settings & Hooks */}
-            <Section id="settings" num="07" title="Settings & Hooks">
-              <Reveal><P><Code>.claude/settings.json</Code> controls permissions and hooks. Exists at user, project, and local levels.</P></Reveal>
-
-              <Sub title="Permissions">
-                <Code block lang="json">{`{
+          {/* 08 Permissions & Hooks */}
+          <Sec id="settings" num="08" title="Permissions & Hooks">
+            <Sub title="Permission Modes">
+              <P>Claude Code has several permission modes that control how much autonomy Claude has. You can set these via <C>/config</C>, CLI flags, or settings.json.</P>
+              <T headers={["Mode","Behaviour"]} rows={[
+                ["default","Claude asks permission before each action"],
+                ["acceptEdits","Auto-approves file edits; other tools still prompt"],
+                ["plan","Claude analyses and plans but cannot make changes"],
+              ]}/>
+            </Sub>
+            <Sub title="Permission Rules">
+              <P>Define allow/deny rules in <C>.claude/settings.json</C>:</P>
+              <C block lang="json">{`{
   "permissions": {
     "allow": [
       "Bash(git *)", "Bash(npm run *)",
@@ -587,12 +385,20 @@ You are a senior code reviewer. For each file:
     ],
     "deny": ["Bash(rm -rf *)"]
   }
-}`}</Code>
-              </Sub>
+}`}</C>
+              <P>Rules use pattern matching: <C>Bash(npm:*)</C> matches any command starting with "npm". File rules support globs: <C>Read(./src/**/*.ts)</C>.</P>
+            </Sub>
 
-              <Sub title="Hooks">
-                <P>Deterministic shell commands or HTTP endpoints at lifecycle events. Does not depend on LLM judgment.</P>
-                <Code block lang="json">{`{
+            <Sub title="--dangerously-skip-permissions">
+              <Box type="danger"><B>This flag bypasses ALL permission prompts.</B> Claude will read, write, delete files and execute shell commands without asking. It is intended <B>only</B> for use inside isolated, sandboxed environments like Docker containers or dev containers with firewall rules. Never use it on your main machine or with access to production systems.</Box>
+              <C block lang="bash">{`# ONLY inside a sandboxed container
+claude --dangerously-skip-permissions`}</C>
+              <P>Anthropic provides a reference dev container implementation with network firewall rules specifically designed for this use case.</P>
+            </Sub>
+
+            <Sub title="Hooks">
+              <P>Hooks are deterministic shell commands or HTTP endpoints that fire at lifecycle events. They do not depend on LLM judgment — they always run.</P>
+              <C block lang="json">{`{
   "hooks": {
     "PostToolUse": [{
       "matcher": "Edit|MultiEdit|Write",
@@ -603,120 +409,139 @@ You are a senior code reviewer. For each file:
       }]
     }]
   }
-}`}</Code>
-                <Table headers={["Event", "Fires When"]} rows={[
-                  ["PreToolUse", "Before a tool call — can block/modify"],
-                  ["PostToolUse", "After a tool call completes"],
-                  ["Stop / SubagentStop", "When Claude or subagent finishes"],
-                  ["PreCompact", "Before context compaction"],
-                  ["SessionStart / SessionEnd", "Session lifecycle boundaries"],
-                  ["SubagentStart", "When a subagent is spawned"],
-                  ["UserPromptSubmit", "When user sends a message"],
-                  ["Notification", "When Claude wants attention"],
-                  ["PermissionRequest", "Permission decision needed"],
-                ]} />
-                <Callout type="tip">Use hooks for enforcement that must always happen. Use rules for nuanced judgment. Settings edits require session restart. 60-second default timeout. Hooks run in parallel.</Callout>
-              </Sub>
-            </Section>
+}`}</C>
+              <T headers={["Event","Fires When"]} rows={[
+                ["PreToolUse","Before a tool call — can block/modify"],
+                ["PostToolUse","After a tool call completes"],
+                ["Stop / SubagentStop","When Claude or subagent finishes"],
+                ["PreCompact","Before context compaction"],
+                ["SessionStart / SessionEnd","Session lifecycle boundaries"],
+                ["SubagentStart","When a subagent is spawned"],
+                ["UserPromptSubmit","When user sends a message"],
+                ["Notification","When Claude wants attention"],
+                ["PermissionRequest","Permission decision needed"],
+              ]}/>
+              <Box type="tip">Use hooks for enforcement that must always happen (formatting, logging, file protection). Use rules for nuanced judgment. Settings edits require session restart. 60-second default timeout. Hooks run in parallel. Use <C>/hooks</C> to manage interactively.</Box>
+            </Sub>
+          </Sec>
 
-            {/* Memory */}
-            <Section id="memory" num="08" title="Memory System">
-              <Reveal><P>Two complementary systems, both loaded at every conversation start.</P></Reveal>
-
-              <Sub title="CLAUDE.md Files (You Write)">
-                <P>Instructions you author. Persist on disk. Survive compaction. Covered in section 03.</P>
-              </Sub>
-
-              <Sub title="Auto Memory (Claude Writes)">
-                <P>Claude accumulates knowledge across sessions — build commands, debugging insights, architecture notes, style preferences.</P>
-                <Code block lang="text">{`~/.claude/projects/<project>/memory/
+          {/* 09 Memory */}
+          <Sec id="memory" num="09" title="Memory System">
+            <R><P>Two complementary systems, both loaded at every conversation start.</P></R>
+            <Sub title="CLAUDE.md Files (You Write)">
+              <P>Instructions you author. Persist on disk. Survive compaction. Covered in section 04.</P>
+            </Sub>
+            <Sub title="Auto Memory (Claude Writes)">
+              <P>Claude accumulates knowledge across sessions without you writing anything — build commands, debugging insights, architecture notes, style preferences. When you correct Claude ("no, use pnpm not npm"), it saves that to auto memory.</P>
+              <C block lang="text">{`~/.claude/projects/<project>/memory/
 ├── MEMORY.md          # Index, loaded every session
 ├── debugging.md       # Debugging patterns
 ├── api-conventions.md # Design decisions
-└── ...                # Topic files as needed`}</Code>
-                <P>Run <Code>/memory</Code> to browse, toggle, or edit. Plain markdown. Machine-local; all worktrees in the same repo share one directory.</P>
-              </Sub>
+└── ...                # Topic files as needed`}</C>
+              <P>Run <C>/memory</C> to browse, toggle, or edit. Plain markdown. Machine-local; all worktrees in the same repo share one directory.</P>
+            </Sub>
+          </Sec>
 
-              <Sub title="Context & Compaction">
-                <P><B>CLAUDE.md</B> — re-read from disk after compaction. <B>Auto memory</B> — persists on disk. <B>Conversation</B> — compressed, reasoning may be lost. Save important decisions to memory or files before they compress away.</P>
-              </Sub>
-            </Section>
+          {/* 10 Context Management */}
+          <Sec id="context" num="10" title="Context Management">
+            <R><P>Each session starts with a fresh context window. As you work, the window fills with conversation history, file contents, and tool outputs. Managing this is key to consistent results and controlling costs.</P></R>
+            <Sub title="Key Commands">
+              <T headers={["Command","When to Use"]} rows={[
+                ["/clear","Switching to an unrelated task. Starts fresh, preserves old session for /resume."],
+                ["/compact","Conversation is long but you want to continue. Summarises history, frees space."],
+                ["/cost","Check current token usage and spend."],
+                ["@filename","Include a specific file directly. Prevents Claude from scanning the whole project."],
+              ]}/>
+            </Sub>
+            <Sub title="What Survives Compaction">
+              <P><B>CLAUDE.md</B> — re-read from disk, always fully present. <B>Auto memory</B> — persists on disk independently. <B>Conversation details</B> — compressed, specific reasoning may be lost. Save important decisions to memory or files before they compress away.</P>
+            </Sub>
+            <Sub title="Cost-Saving Habits">
+              <P>Use <C>/clear</C> between unrelated tasks. Use <C>@filename</C> instead of vague requests like "look at my code." Be specific — "add input validation to the login function in auth.ts" costs far fewer tokens than "improve this codebase." Use <C>/compact Focus on [topic]</C> to tell Claude what to preserve during summarisation.</P>
+            </Sub>
+          </Sec>
 
-            {/* Patterns */}
-            <Section id="patterns" num="09" title="Workflow Patterns">
-              <Sub title="Plan-First Development">
-                <P>For non-trivial tasks, Claude enters plan mode — researches via the Plan subagent, drafts an approach, presents for approval before touching files. Trigger with "plan this first" or <Code>claude --plan</Code>.</P>
-              </Sub>
-              <Sub title="Subagent Delegation">
-                <P>Automatic delegation when tasks benefit from isolation or parallelism. Three parallel subagents is the sweet spot. They cannot see each other's work.</P>
-              </Sub>
-              <Sub title="Adversarial Review">
-                <P>Read-only critic subagent finds issues. Separate fixer applies corrections. Critic cannot fix (no downplay incentive). Fixer cannot approve itself. Loop until critic approves.</P>
-              </Sub>
-            </Section>
+          {/* 11 Patterns */}
+          <Sec id="patterns" num="11" title="Workflow Patterns">
+            <Sub title="Plan-First Development">
+              <P>For non-trivial tasks, Claude enters plan mode — researches via the Plan subagent, drafts an approach, presents for approval before touching files. Trigger with "plan this first", press <B>Shift+Tab</B> in the prompt, or start with <C>claude --plan</C>.</P>
+            </Sub>
+            <Sub title="Subagent Delegation">
+              <P>Automatic delegation when tasks benefit from isolation or parallelism. Three parallel subagents is the sweet spot. They cannot see each other's work.</P>
+            </Sub>
+            <Sub title="Adversarial Review">
+              <P>Read-only critic subagent finds issues. Separate fixer applies corrections. Critic cannot fix (no downplay incentive). Fixer cannot approve itself. Loop until critic approves.</P>
+            </Sub>
+          </Sec>
 
-            {/* Setup */}
-            <Section id="setup" num="10" title="Setup Best Practices">
-              <Sub title="Day 1 Checklist">
-                <P>1. Install and authenticate. 2. Create <Code>CLAUDE.md</Code> (under 200 lines). 3. Run <Code>claude</Code> and describe what you want. 4. Let auto memory learn from corrections.</P>
-              </Sub>
-              <Sub title="Progressive Adoption">
-                <P>Start with <Code>CLAUDE.md</Code> alone. Add rules for repeating patterns. Add skills for frequent multi-step workflows. Add subagents for specialised review.</P>
-              </Sub>
-              <Sub title="Instruction Budget">
-                <P>Each CLAUDE.md under 200 lines. Always-on rules: 2–3 files. Use <Code>paths:</Code> on everything else. If Claude ignores rules, context budget is exceeded — consolidate.</P>
-              </Sub>
-              <Sub title="Verification">
-                <P>Enforce with a rule in <Code>.claude/rules/verification.md</Code> and a <Code>PostToolUse</Code> hook. "Done" means "verified."</P>
-              </Sub>
-            </Section>
+          {/* 12 Setup */}
+          <Sec id="setup" num="12" title="Setup Best Practices">
+            <Sub title="Day 1 Checklist">
+              <P>1. Install Claude Code using the native installer. 2. Create <C>CLAUDE.md</C> in the project root (under 200 lines). 3. Navigate to your project folder, run <C>claude</C>, and describe what you want. 4. Let auto memory learn from your corrections.</P>
+            </Sub>
+            <Sub title="Progressive Adoption">
+              <P>Start with <C>CLAUDE.md</C> alone. Add rules for repeating patterns. Add skills for frequent multi-step workflows. Add subagents for specialised review. Add plugins when you discover community tools that fit your stack.</P>
+            </Sub>
+            <Sub title="Instruction Budget">
+              <P>Each CLAUDE.md under 200 lines. Always-on rules: 2–3 files. Use <C>paths:</C> on everything else. If Claude ignores rules, context budget is exceeded — consolidate.</P>
+            </Sub>
+            <Sub title="Verification">
+              <P>Enforce with a rule in <C>.claude/rules/verification.md</C> and a <C>PostToolUse</C> hook. "Done" means "verified."</P>
+            </Sub>
+          </Sec>
 
-            {/* Troubleshooting */}
-            <Section id="troubleshooting" num="11" title="Troubleshooting">
-              <Reveal><Table headers={["Problem", "Solution"]} rows={[
-                ["Claude ignores rules", "Check paths: patterns. Reduce instruction volume. Ask Claude to read rule explicitly."],
-                ["Context lost after compaction", "CLAUDE.md reloads automatically. Point Claude to auto memory or files."],
-                ["Skills not auto-invoked", "Check description triggers. Verify disable-model-invocation not set."],
-                ["Hooks not firing", "Check settings.json. Scripts executable. Restart session after edits."],
-                ["Excessive subagent spawning", "Add CLAUDE.md guidance. Known Opus 4.6 tendency."],
-                ["Claude forgets mid-session", "Save to memory. Extract workflows into skills on disk."],
-              ]} /></Reveal>
-            </Section>
+          {/* 13 Troubleshooting */}
+          <Sec id="troubleshooting" num="13" title="Troubleshooting">
+            <R><T headers={["Problem","Solution"]} rows={[
+              ["Claude ignores rules","Check paths: patterns. Reduce instruction volume. Ask Claude to read rule explicitly."],
+              ["Context lost after compaction","CLAUDE.md reloads automatically. Point Claude to auto memory or files."],
+              ["Skills not auto-invoked","Check description triggers. Verify disable-model-invocation not set."],
+              ["Hooks not firing","Check settings.json. Scripts executable. Restart session after edits. Use /hooks."],
+              ["Excessive subagent spawning","Add CLAUDE.md guidance. Known Opus 4.6 tendency."],
+              ["Claude forgets mid-session","Use /clear between tasks. Save to memory. Extract workflows into skills."],
+              ["Installation issues","Run claude doctor. Check native vs npm conflicts. See Anthropic's troubleshooting guide."],
+            ]}/></R>
+          </Sec>
 
-            {/* Reference */}
-            <Section id="reference" num="12" title="Quick Reference">
-              <Sub title="Configuration Locations">
-                <Table headers={["What", "Where", "Loaded"]} rows={[
-                  ["Project instructions", "./CLAUDE.md", "Every session"],
-                  ["User instructions", "~/.claude/CLAUDE.md", "Every session"],
-                  ["Local overrides", "./CLAUDE.local.md", "Every session"],
-                  ["Always-on rules", ".claude/rules/ (no paths:)", "Every session"],
-                  ["Scoped rules", ".claude/rules/ (with paths:)", "Matching files"],
-                  ["Skills", ".claude/skills/*/SKILL.md", "Invocation"],
-                  ["Subagents", ".claude/agents/*.md", "Delegation"],
-                  ["Auto memory", "~/.claude/projects/*/memory/", "Every session"],
-                  ["Settings", ".claude/settings.json", "Every session"],
-                ]} />
-              </Sub>
-              <Sub title="Key Slash Commands">
-                <Table headers={["Command", "Purpose"]} rows={[
-                  ["/memory", "Browse memory, toggle auto memory"],
-                  ["/agents", "Create and manage subagents"],
-                  ["/compact", "Trigger context compaction"],
-                  ["/config", "Edit settings"],
-                  ["/hooks", "Manage hooks interactively"],
-                ]} />
-              </Sub>
-            </Section>
+          {/* 14 Reference */}
+          <Sec id="reference" num="14" title="Quick Reference">
+            <Sub title="Configuration Locations">
+              <T headers={["What","Where","Loaded"]} rows={[
+                ["Project instructions","./CLAUDE.md","Every session"],
+                ["User instructions","~/.claude/CLAUDE.md","Every session"],
+                ["Local overrides","./CLAUDE.local.md","Every session"],
+                ["Always-on rules",".claude/rules/ (no paths:)","Every session"],
+                ["Scoped rules",".claude/rules/ (with paths:)","Matching files"],
+                ["Skills",".claude/skills/*/SKILL.md","Invocation"],
+                ["Subagents",".claude/agents/*.md","Delegation"],
+                ["Auto memory","~/.claude/projects/*/memory/","Every session"],
+                ["Settings",".claude/settings.json","Every session"],
+                ["Plugins","Via /plugin command","When enabled"],
+              ]}/>
+            </Sub>
+            <Sub title="Key Slash Commands">
+              <T headers={["Command","Purpose"]} rows={[
+                ["/clear","Start fresh session (old session preserved)"],
+                ["/compact","Summarise context to free space"],
+                ["/memory","Browse and manage auto memory"],
+                ["/agents","Create and manage subagents"],
+                ["/plugin","Discover and install plugins"],
+                ["/config","Edit settings"],
+                ["/hooks","Manage hooks interactively"],
+                ["/cost","Check token usage"],
+                ["/resume","Resume a previous session"],
+                ["/rename","Name current session for later"],
+              ]}/>
+            </Sub>
+          </Sec>
 
-          </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
-  );
+  </div>;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
