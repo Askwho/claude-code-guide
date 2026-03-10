@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code: A Practical Guide — Tom Askew</title>
+<meta name="description" content="A lean, authoritative reference for Claude Code — Anthropic's agentic coding tool. Configuration, memory, workflows, and setup best practices." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(200,160,100,0.2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(200,160,100,0.35); }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const SECTIONS = [
+  { id: "intro", label: "What Claude Code Is" },
+  { id: "install", label: "Installation" },
+  { id: "claude-md", label: "CLAUDE.md" },
+  { id: "rules", label: "Rules" },
+  { id: "skills", label: "Skills" },
+  { id: "subagents", label: "Subagents" },
+  { id: "settings", label: "Settings & Hooks" },
+  { id: "memory", label: "Memory System" },
+  { id: "patterns", label: "Workflow Patterns" },
+  { id: "setup", label: "Setup Best Practices" },
+  { id: "troubleshooting", label: "Troubleshooting" },
+  { id: "reference", label: "Quick Reference" },
+];
+
+function Code({ children, block = false, lang = "" }) {
+  if (!block) {
+    return (
+      <code style={{
+        background: "rgba(200,160,100,0.1)", color: "#e8c88a",
+        padding: "2px 7px", borderRadius: 4,
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        fontSize: "0.85em", border: "1px solid rgba(200,160,100,0.15)",
+      }}>{children}</code>
+    );
+  }
+  return (
+    <div style={{ position: "relative", margin: "20px 0" }}>
+      {lang && (
+        <div style={{
+          position: "absolute", top: 0, right: 0,
+          background: "rgba(200,160,100,0.15)", color: "#b89a6a",
+          fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
+          padding: "3px 10px", borderBottomLeftRadius: 6,
+          letterSpacing: 1, textTransform: "uppercase",
+        }}>{lang}</div>
+      )}
+      <pre style={{
+        background: "#1a1714", border: "1px solid rgba(200,160,100,0.12)",
+        borderRadius: 8, padding: "20px 24px", overflowX: "auto",
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        fontSize: 13, lineHeight: 1.7, color: "#c8b89a", margin: 0,
+      }}><code>{children}</code></pre>
+    </div>
+  );
+}
+
+function Table({ headers, rows }) {
+  return (
+    <div style={{ overflowX: "auto", margin: "20px 0" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, lineHeight: 1.6 }}>
+        <thead>
+          <tr>
+            {headers.map((h, i) => (
+              <th key={i} style={{
+                textAlign: "left", padding: "10px 16px",
+                borderBottom: "2px solid rgba(200,160,100,0.25)",
+                color: "#e8c88a", fontWeight: 600, fontSize: 12,
+                letterSpacing: 0.8, textTransform: "uppercase",
+                fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap",
+              }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} style={{ borderBottom: "1px solid rgba(200,160,100,0.08)" }}>
+              {row.map((cell, ci) => (
+                <td key={ci} style={{
+                  padding: "10px 16px",
+                  color: ci === 0 ? "#d4c4a8" : "#9a8e7a",
+                  fontFamily: ci === 0 ? "'JetBrains Mono', monospace" : "inherit",
+                  fontSize: ci === 0 ? 13 : 14,
+                }}>{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Callout({ type = "info", children }) {
+  const styles = {
+    info: { border: "rgba(100,160,220,0.3)", bg: "rgba(100,160,220,0.06)", accent: "#6ca0dc", icon: "ℹ" },
+    warn: { border: "rgba(220,180,80,0.3)", bg: "rgba(220,180,80,0.06)", accent: "#dcb450", icon: "⚠" },
+    tip: { border: "rgba(120,200,140,0.3)", bg: "rgba(120,200,140,0.06)", accent: "#78c88c", icon: "✦" },
+  };
+  const s = styles[type] || styles.info;
+  return (
+    <div style={{
+      background: s.bg, borderLeft: `3px solid ${s.accent}`,
+      borderRadius: "0 8px 8px 0", padding: "16px 20px",
+      margin: "20px 0", display: "flex", gap: 12, alignItems: "flex-start",
+    }}>
+      <span style={{ color: s.accent, fontSize: 16, flexShrink: 0, marginTop: 1 }}>{s.icon}</span>
+      <div style={{ color: "#b8a890", fontSize: 14, lineHeight: 1.65 }}>{children}</div>
+    </div>
+  );
+}
+
+function Section({ id, title, children }) {
+  return (
+    <section id={id} style={{ marginBottom: 64, scrollMarginTop: 32 }}>
+      <h2 style={{
+        fontSize: 28, fontWeight: 700, color: "#f0e6d6", marginBottom: 24,
+        paddingBottom: 12, borderBottom: "1px solid rgba(200,160,100,0.15)",
+        letterSpacing: -0.5,
+      }}>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Sub({ title, children }) {
+  return (
+    <div style={{ marginBottom: 40 }}>
+      <h3 style={{ fontSize: 19, fontWeight: 600, color: "#e8c88a", marginBottom: 16, letterSpacing: -0.3 }}>{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function P({ children }) {
+  return <p style={{ color: "#b8a890", lineHeight: 1.75, fontSize: 15, marginBottom: 16 }}>{children}</p>;
+}
+
+function B({ children }) {
+  return <strong style={{ color: "#d4c4a8", fontWeight: 600 }}>{children}</strong>;
+}
+
+function App() {
+  const [active, setActive] = useState("intro");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const mainRef = useRef(null);
+
+  const onScroll = useCallback(() => {
+    if (!mainRef.current) return;
+    const top = mainRef.current.scrollTop;
+    let cur = "intro";
+    for (const s of SECTIONS) {
+      const el = document.getElementById(s.id);
+      if (el && el.offsetTop - 80 <= top) cur = s.id;
+    }
+    setActive(cur);
+  }, []);
+
+  useEffect(() => {
+    const el = mainRef.current;
+    if (el) el.addEventListener("scroll", onScroll);
+    return () => el && el.removeEventListener("scroll", onScroll);
+  }, [onScroll]);
+
+  const go = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMenuOpen(false);
+  };
+
+  return (
+    <div style={{
+      display: "flex", height: "100vh", width: "100%",
+      background: "#141210", fontFamily: "'DM Sans', sans-serif", color: "#b8a890", overflow: "hidden",
+    }}>
+      {/* Mobile toggle */}
+      <button onClick={() => setMenuOpen(!menuOpen)} style={{
+        position: "fixed", top: 16, left: 16, zIndex: 1000,
+        background: "#1e1b17", border: "1px solid rgba(200,160,100,0.2)",
+        color: "#e8c88a", width: 40, height: 40, borderRadius: 8,
+        cursor: "pointer", alignItems: "center", justifyContent: "center",
+        fontSize: 18, display: "none",
+      }} id="mob-btn">{menuOpen ? "✕" : "☰"}</button>
+
+      <style>{`
+        @media(max-width:900px){
+          #mob-btn{display:flex!important}
+          #sidebar{position:fixed!important;z-index:999!important;
+            transform:${menuOpen?"translateX(0)":"translateX(-100%)"}!important;
+            transition:transform .25s ease!important;
+            box-shadow:${menuOpen?"4px 0 24px rgba(0,0,0,.5)":"none"}!important}
+        }
+        @media(max-width:600px){
+          #main-content{padding:32px 20px 100px!important}
+          #hero-title{font-size:32px!important}
+        }
+      `}</style>
+
+      {/* Sidebar */}
+      <nav id="sidebar" style={{
+        width: 260, minWidth: 260, height: "100vh",
+        background: "#18150f", borderRight: "1px solid rgba(200,160,100,0.1)",
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      }}>
+        <div style={{ padding: "28px 24px 20px", borderBottom: "1px solid rgba(200,160,100,0.1)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 6,
+              background: "linear-gradient(135deg, #e8c88a 0%, #b8864a 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 700, color: "#141210",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>{">_"}</div>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontWeight: 600,
+              fontSize: 15, color: "#f0e6d6", letterSpacing: -0.3,
+            }}>Claude Code</span>
+          </div>
+          <div style={{
+            fontSize: 11, color: "#7a7060",
+            fontFamily: "'JetBrains Mono', monospace", letterSpacing: 0.5,
+          }}>A PRACTICAL GUIDE</div>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 12px" }}>
+          {SECTIONS.map(s => (
+            <button key={s.id} onClick={() => go(s.id)} style={{
+              display: "block", width: "100%", textAlign: "left",
+              padding: "9px 14px", marginBottom: 2, borderRadius: 6,
+              border: "none", cursor: "pointer", fontSize: 13,
+              fontWeight: active === s.id ? 600 : 400,
+              color: active === s.id ? "#e8c88a" : "#8a7e6a",
+              background: active === s.id ? "rgba(200,160,100,0.1)" : "transparent",
+              transition: "all 0.15s ease", fontFamily: "'DM Sans', sans-serif",
+            }}>{s.label}</button>
+          ))}
+        </div>
+        <div style={{
+          padding: "16px 20px", borderTop: "1px solid rgba(200,160,100,0.1)",
+          fontSize: 11, color: "#5a5040", fontFamily: "'JetBrains Mono', monospace",
+        }}>By Tom Askew · March 2026</div>
+      </nav>
+
+      {/* Main */}
+      <main ref={mainRef} id="main-content" style={{
+        flex: 1, overflowY: "auto", padding: "48px 56px 120px", maxWidth: 820,
+      }}>
+        <div style={{ animation: "fadeInUp 0.5s ease" }}>
+
+          {/* Hero */}
+          <div style={{ marginBottom: 64 }}>
+            <div style={{
+              fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
+              color: "#7a7060", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16,
+            }}>Condensed Reference</div>
+            <h1 id="hero-title" style={{
+              fontFamily: "'Source Serif 4', Georgia, serif",
+              fontSize: 44, fontWeight: 700, color: "#f0e6d6",
+              lineHeight: 1.15, letterSpacing: -1.2, marginBottom: 20,
+            }}>Claude Code<br /><span style={{ color: "#e8c88a" }}>Practical Guide</span></h1>
+            <P>A lean, authoritative reference for Claude Code — Anthropic's agentic coding tool. Covers configuration architecture, memory systems, workflow patterns, and setup best practices. Sourced from Anthropic's official documentation.</P>
+          </div>
+
+          {/* Intro */}
+          <Section id="intro" title="What Claude Code Is">
+            <P>Claude Code is an agentic coding tool from Anthropic that runs in your terminal with full access to your file system, shell, and git. It also runs as a VS Code extension or through the Claude Desktop app — same capabilities, same configuration, different interface.</P>
+            <Table headers={["Capability", "What It Does"]} rows={[
+              ["File access", "Read and edit any file in your project"],
+              ["Shell execution", "Run scripts, compilers, build tools directly"],
+              ["Git integration", "Commits, branches, PRs from the conversation"],
+              ["Persistent memory", "CLAUDE.md + auto memory survive across sessions"],
+              ["Subagents", "Spawn specialised sub-agents for parallel or isolated tasks"],
+              ["Skills", "Reusable multi-step workflows via /skill-name"],
+              ["Hooks", "Deterministic shell commands that fire at lifecycle events"],
+            ]} />
+            <Callout type="info">Requires a <B>Pro, Max, Teams, Enterprise, or Console</B> account. The free Claude.ai plan does not include access. Third-party providers (Amazon Bedrock, Google Vertex AI, Microsoft Foundry) are also supported.</Callout>
+          </Section>
+
+          {/* Install */}
+          <Section id="install" title="Installation">
+            <Code block lang="bash">{`# macOS / Linux / WSL (native binary — recommended)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Or via npm (global)
+npm install -g @anthropic-ai/claude-code`}</Code>
+            <P>Windows requires Git for Windows or WSL. After installation, navigate to your project directory and run <Code>claude</Code> to start. Native installations auto-update in the background. Use <Code>/config</Code> to choose the <Code>latest</Code> or <Code>stable</Code> release channel.</P>
+          </Section>
+
+          {/* CLAUDE.md */}
+          <Section id="claude-md" title="1. CLAUDE.md — The Project Constitution">
+            <P><Code>CLAUDE.md</Code> sits in the project root (or at <Code>.claude/CLAUDE.md</Code>). Claude reads it at the start of every session. It is the single most important configuration file.</P>
+            <Callout type="warn">Target <B>under 200 lines</B> per CLAUDE.md file. Longer files consume more context tokens and reduce adherence. Instructions are context, not enforced configuration — how you write them affects how reliably Claude follows them.</Callout>
+
+            <Sub title="Survives Compaction">
+              <P>After <Code>/compact</Code>, Claude re-reads CLAUDE.md from disk and re-injects it fresh into the session. If an instruction disappeared after compaction, it was given only in conversation — add it to CLAUDE.md to make it persist.</P>
+            </Sub>
+
+            <Sub title="Location Hierarchy">
+              <P>CLAUDE.md files can live in several locations. More specific locations take precedence:</P>
+              <Table headers={["Location", "Scope"]} rows={[
+                ["~/.claude/CLAUDE.md", "User-level — all your projects"],
+                ["./CLAUDE.md or ./.claude/CLAUDE.md", "Project-level — this repo"],
+                ["./CLAUDE.local.md", "Local overrides — gitignored automatically"],
+                ["Subdirectory CLAUDE.md", "Load on demand when Claude reads files there"],
+              ]} />
+            </Sub>
+
+            <Sub title="Importing Additional Files">
+              <P>Use <Code>@path</Code> syntax to reference external content without bloating CLAUDE.md:</P>
+              <Code block lang="markdown">{`# CLAUDE.md
+See @docs/api-conventions.md for API design rules.
+See @docs/testing-standards.md for test requirements.`}</Code>
+            </Sub>
+
+            <Sub title="Writing Effective Instructions">
+              <P><B>Specific and verifiable</B> — "Use 2-space indentation" not "Format code properly." <B>Markdown structure</B> — headers and bullets help Claude scan. <B>Split when growing</B> — move detail into <Code>.claude/rules/</Code> or <Code>@path</Code> imports when over 200 lines.</P>
+              <Code block lang="markdown">{`# CLAUDE.MD — My Project
+
+**Project:** [Name]
+
+## Core Principles
+1. Plan before building non-trivial tasks
+2. Verify output before reporting done
+3. Quality gates: 80 to commit, 90 for PR
+4. Persist corrections via auto memory
+
+## Commands
+| Command       | What It Does   |
+|---------------|----------------|
+| npm run build | Build project  |
+| npm test      | Run test suite |
+| npm run lint  | Lint and format |`}</Code>
+            </Sub>
+          </Section>
+
+          {/* Rules */}
+          <Section id="rules" title="2. Rules — Auto-Loading Domain Knowledge">
+            <P>Rules are markdown files in <Code>.claude/rules/</Code>. Claude loads them automatically. The key mechanism is <B>path-scoping</B>: rules with a <Code>paths:</Code> YAML frontmatter only load when Claude touches matching files.</P>
+            <P><B>Always-on rules</B> (no <Code>paths:</Code> frontmatter) load every session — keep these to a minimum. <B>Path-scoped rules</B> load only when relevant, keeping context lean.</P>
+            <Code block lang="text">{`.claude/rules/
+├── plan-first.md          # Always-on
+├── python-standards.md    # paths: ["**/*.py"]
+├── api-design.md          # paths: ["src/api/**/*.ts"]
+└── testing.md             # paths: ["tests/**"]`}</Code>
+            <Code block lang="markdown">{`---
+paths:
+  - "src/api/**/*.ts"
+---
+
+# API Development Rules
+
+- All API endpoints must include input validation
+- Use the standard error response format
+- Include OpenAPI documentation comments`}</Code>
+            <Callout type="tip">Path patterns support globs and brace expansion (e.g. <Code>{"**/*.{ts,tsx}"}</Code>). The <Code>.claude/rules/</Code> directory supports symlinks for sharing rules across projects. Each file should cover one topic with a descriptive filename.</Callout>
+          </Section>
+
+          {/* Skills */}
+          <Section id="skills" title="3. Skills — Reusable Slash Commands">
+            <P>Skills are multi-step workflows invoked with <Code>/command-name</Code>. Each lives in a <Code>SKILL.md</Code> at project level (<Code>.claude/skills/[name]/SKILL.md</Code>) or user level (<Code>~/.claude/skills/[name]/SKILL.md</Code>).</P>
+            <Code block lang="markdown">{`---
+name: deploy
+description: Build, test, and deploy to staging.
+  Use when user says "deploy", "ship it", or
+  "push to staging".
+---
+
+# Steps:
+1. Run the full test suite
+2. Build the production bundle
+3. Deploy to staging environment
+4. Verify deployment health check
+5. Report results`}</Code>
+            <Callout type="info">Keep SKILL.md <B>under 500 lines</B>. Skills hot-reload without restarting Claude Code.</Callout>
+
+            <Sub title="Invocation Control">
+              <Table headers={["Frontmatter", "Effect"]} rows={[
+                ["disable-model-invocation: true", "Only user can invoke — use for /commit, /deploy"],
+                ["user-invocable: false", "Only Claude can invoke — background knowledge"],
+                ["context: fork", "Runs in a separate subagent context window"],
+              ]} />
+            </Sub>
+            <Sub title="Effective Descriptions">
+              <P>Good: <Code>description: Enforces PEP 8 style. Use when user asks to "check style", "lint code", or "fix formatting".</Code></P>
+              <P>Bad: <Code>description: Helps with code quality</Code></P>
+            </Sub>
+          </Section>
+
+          {/* Subagents */}
+          <Section id="subagents" title="4. Subagents — Specialised Delegates">
+            <P>Subagents run in their own context window with a custom system prompt, specific tool access, and independent permissions. Claude delegates to them automatically when a task matches.</P>
+
+            <Sub title="Built-in Subagents">
+              <Table headers={["Subagent", "Purpose", "Tools"]} rows={[
+                ["Explore", "Fast read-only codebase search and analysis", "Read-only"],
+                ["Plan", "Research agent for plan mode", "Read-only"],
+                ["General-purpose", "Complex multi-step tasks", "Full"],
+              ]} />
+            </Sub>
+
+            <Sub title="Custom Subagents">
+              <P>Defined as markdown files in <Code>.claude/agents/</Code> (project, takes precedence) or <Code>~/.claude/agents/</Code> (user-level). Use <Code>/agents</Code> to create and manage interactively.</P>
+              <Code block lang="markdown">{`---
+name: code-reviewer
+description: Expert code review specialist.
+  Use when reviewing code for quality,
+  security, and maintainability.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+You are a senior code reviewer. For every file:
+1. Check for bugs and security issues
+2. Evaluate performance
+3. Suggest improvements with line refs
+4. Rate code quality (1-10)`}</Code>
+              <Table headers={["Property", "Effect"]} rows={[
+                ["tools:", "Restrict available tools. Omit to inherit all."],
+                ["model: sonnet|opus|haiku|inherit", "Choose model per agent."],
+                ["background: true", "Run as a background task."],
+                ['isolation: "worktree"', "Run in an isolated git worktree."],
+              ]} />
+            </Sub>
+            <Callout type="warn">Opus 4.6 has a strong tendency to spawn subagents even when direct work suffices. Add guidance to CLAUDE.md: "For simple tasks, single-file edits, or sequential operations, work directly rather than delegating."</Callout>
+          </Section>
+
+          {/* Settings & Hooks */}
+          <Section id="settings" title="5. Settings & Hooks">
+            <P><Code>.claude/settings.json</Code> controls permissions and hooks. Settings exist at user, project, and local levels.</P>
+
+            <Sub title="Permissions">
+              <Code block lang="json">{`{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm run *)",
+      "Read", "Glob", "Grep"
+    ],
+    "deny": [
+      "Bash(rm -rf *)"
+    ]
+  }
+}`}</Code>
+            </Sub>
+
+            <Sub title="Hooks">
+              <P>Shell commands or HTTP endpoints that fire at lifecycle events. Deterministic — does not depend on LLM judgment.</P>
+              <Code block lang="json">{`{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Edit|MultiEdit|Write",
+      "hooks": [{
+        "type": "command",
+        "command": "prettier --write \\"$file\\"",
+        "timeout": 30
+      }]
+    }]
+  }
+}`}</Code>
+              <Table headers={["Event", "Fires When"]} rows={[
+                ["PreToolUse", "Before a tool call — can block or modify"],
+                ["PostToolUse", "After a tool call completes"],
+                ["Stop / SubagentStop", "When Claude or subagent finishes"],
+                ["PreCompact", "Before context compaction"],
+                ["SessionStart / SessionEnd", "Session lifecycle boundaries"],
+                ["SubagentStart", "When a subagent is spawned"],
+                ["UserPromptSubmit", "When user sends a message"],
+                ["Notification", "When Claude wants your attention"],
+                ["PermissionRequest", "When a permission decision is needed"],
+              ]} />
+              <Callout type="tip">Use hooks for enforcement that must always happen (formatting, logging, file protection). Use rules for nuanced judgment. Hook security: edits require a session restart. 60-second default timeout. Hooks run in parallel.</Callout>
+            </Sub>
+          </Section>
+
+          {/* Memory */}
+          <Section id="memory" title="Memory System">
+            <P>Two complementary systems, both loaded at the start of every conversation.</P>
+
+            <Sub title="CLAUDE.md Files (You Write)">
+              <P>Instructions you write to guide Claude's behaviour. Persist on disk. Survive compaction. Covered in section 1 above.</P>
+            </Sub>
+
+            <Sub title="Auto Memory (Claude Writes)">
+              <P>Claude accumulates knowledge across sessions without you writing anything — build commands, debugging insights, architecture notes, code style preferences, workflow patterns.</P>
+              <Code block lang="text">{`~/.claude/projects/<project>/memory/
+├── MEMORY.md          # Index, loaded every session
+├── debugging.md       # Debugging patterns
+├── api-conventions.md # Design decisions
+└── ...                # Topic files as needed`}</Code>
+              <P>Run <Code>/memory</Code> to browse, toggle auto memory, or open memory files in your editor. Everything is plain markdown you can read, edit, or delete. Auto memory is machine-local; all worktrees in the same repo share one directory.</P>
+            </Sub>
+
+            <Sub title="Context & Compaction">
+              <P>Each session starts with a fresh context window. As it fills, auto-compaction occurs. <B>CLAUDE.md</B> is re-read from disk after compaction. <B>Auto memory</B> files persist on disk. <B>Conversation details</B> are compressed — specific reasoning may be lost. To preserve important decisions, ask Claude to save them to memory or write them to files.</P>
+            </Sub>
+          </Section>
+
+          {/* Patterns */}
+          <Section id="patterns" title="Workflow Patterns">
+            <Sub title="Plan-First Development">
+              <P>For non-trivial tasks, Claude enters plan mode before making changes — researches the codebase using the Plan subagent, drafts an approach, presents it for approval. Trigger with "plan this first" or <Code>claude --plan</Code>.</P>
+            </Sub>
+            <Sub title="Subagent Delegation">
+              <P>Claude delegates to subagents when tasks benefit from isolated context or parallel execution. Three parallel subagents is the practical sweet spot. Subagents are independent — they cannot see each other's work.</P>
+            </Sub>
+            <Sub title="Adversarial Review">
+              <P>Define a read-only critic subagent that finds issues, then a separate fixer subagent that applies corrections. The critic cannot fix files (no incentive to downplay). The fixer cannot approve itself. Loop until the critic gives approval.</P>
+            </Sub>
+          </Section>
+
+          {/* Setup */}
+          <Section id="setup" title="Setup Best Practices">
+            <Sub title="Day 1 Checklist">
+              <P>1. Install Claude Code and authenticate. 2. Create <Code>CLAUDE.md</Code> in the project root (under 200 lines). 3. Run <Code>claude</Code> in the project directory and describe what you want. 4. Let auto memory handle learning from your corrections.</P>
+            </Sub>
+            <Sub title="Progressive Adoption">
+              <P>Start with <Code>CLAUDE.md</Code> alone. Add rules when you discover repeating patterns. Add skills when you have multi-step workflows you invoke frequently. Add subagents when you need specialised review or isolated parallel work.</P>
+            </Sub>
+            <Sub title="Instruction Budget">
+              <P>Keep each CLAUDE.md under 200 lines. Keep always-on rules to 2–3 files. Use <Code>paths:</Code> frontmatter on every rule that is not universally needed. If Claude starts ignoring rules, the context budget is likely exceeded — consolidate.</P>
+            </Sub>
+            <Sub title="Verification">
+              <P>Claude should compile, render, run tests, or otherwise verify every output before reporting done. Enforce with a rule in <Code>.claude/rules/verification.md</Code> and reinforce with a <Code>PostToolUse</Code> hook. "Done" means "verified."</P>
+            </Sub>
+          </Section>
+
+          {/* Troubleshooting */}
+          <Section id="troubleshooting" title="Troubleshooting">
+            <Table headers={["Problem", "Solution"]} rows={[
+              ["Claude ignores rules", "Check paths: patterns match files. Reduce instruction volume. Ask Claude to read the rule explicitly."],
+              ["Context lost after compaction", "CLAUDE.md reloads automatically. Point Claude to auto memory or relevant files."],
+              ["Skills not auto-invoked", "Check description has clear triggers. Verify disable-model-invocation is not set."],
+              ["Hooks not firing", "Check settings.json. Ensure scripts executable. Settings edits need session restart."],
+              ["Excessive subagent spawning", "Add CLAUDE.md guidance preferring direct work. Known Opus 4.6 tendency."],
+              ["Claude forgets mid-session", "Context compression. Save to memory. Extract workflows into skills on disk."],
+            ]} />
+          </Section>
+
+          {/* Reference */}
+          <Section id="reference" title="Quick Reference">
+            <Sub title="Configuration Locations">
+              <Table headers={["What", "Where", "Loaded When"]} rows={[
+                ["Project instructions", "./CLAUDE.md", "Every session"],
+                ["User instructions", "~/.claude/CLAUDE.md", "Every session"],
+                ["Local overrides", "./CLAUDE.local.md", "Every session (gitignored)"],
+                ["Always-on rules", ".claude/rules/*.md (no paths:)", "Every session"],
+                ["Path-scoped rules", ".claude/rules/*.md (with paths:)", "When matching files read"],
+                ["Skills", ".claude/skills/[name]/SKILL.md", "On invocation / auto-detect"],
+                ["Subagents", ".claude/agents/[name].md", "When Claude delegates"],
+                ["Auto memory", "~/.claude/projects/<proj>/memory/", "Every session"],
+                ["Settings", ".claude/settings.json", "Every session"],
+              ]} />
+            </Sub>
+            <Sub title="Key Slash Commands">
+              <Table headers={["Command", "Purpose"]} rows={[
+                ["/memory", "Browse and manage memory, toggle auto memory"],
+                ["/agents", "Create, list, and manage subagents"],
+                ["/compact", "Manually trigger context compaction"],
+                ["/config", "Edit Claude Code settings"],
+                ["/hooks", "Add and manage hooks interactively"],
+              ]} />
+            </Sub>
+          </Section>
+
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
